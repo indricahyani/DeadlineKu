@@ -26,6 +26,22 @@ fun AddTaskScreen(
 
     val repository = TaskRepository()
 
+    val categoryRepository = CategoryRepository()
+
+    var categoryList by remember {
+        mutableStateOf(listOf<Category>())
+    }
+
+    var expanded by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(Unit) {
+        categoryRepository.getCategories {
+            categoryList = it
+        }
+    }
+
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
@@ -60,12 +76,52 @@ fun AddTaskScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = category,
-            onValueChange = { category = it },
-            label = { Text("Kategori") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = {
+                expanded = !expanded
+            }
+        ) {
+
+            OutlinedTextField(
+                value = category,
+                onValueChange = {},
+                readOnly = true,
+                label = {
+                    Text("Kategori")
+                },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(
+                        expanded = expanded
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+            )
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = {
+                    expanded = false
+                }
+            ) {
+
+                categoryList.forEach { item ->
+
+                    DropdownMenuItem(
+                        text = {
+                            Text(item.name)
+                        },
+                        onClick = {
+
+                            category = item.name
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
