@@ -8,11 +8,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import io.github.boguszpawlowski.composecalendar.Calendar
 import io.github.boguszpawlowski.composecalendar.rememberCalendarState
+import com.example.deadlineku.model.Task
+import com.example.deadlineku.repository.TaskRepository
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 
 @Composable
 fun CalendarScreen() {
 
     val calendarState = rememberCalendarState()
+
+    val repository = TaskRepository()
+
+    var taskList by remember {
+        mutableStateOf(listOf<Task>())
+    }
+
+    LaunchedEffect(Unit) {
+        repository.getTasks {
+            taskList = it
+        }
+    }
+
 
     Column(
         modifier = Modifier

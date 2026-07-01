@@ -12,5 +12,7 @@ sealed class Screen(val route: String) {
 
     object Settings : Screen("settings")
 
+    object Category : Screen("category")
+
     object EditTask : Screen("edit_task/{taskId}")
 }

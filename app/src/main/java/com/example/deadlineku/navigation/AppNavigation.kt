@@ -15,6 +15,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.deadlineku.navigation.BottomNavBar
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.padding
+import com.example.deadlineku.screen.CategoryScreen
 
 @Composable
 fun AppNavigation() {
@@ -58,7 +59,7 @@ fun AppNavigation() {
             }
 
             composable(Screen.Settings.route) {
-                SettingsScreen()
+                SettingsScreen(navController)
             }
 
             composable(Screen.AddTask.route) {
@@ -89,6 +90,10 @@ fun AppNavigation() {
                     taskId = taskId,
                     navController = navController
                 )
+            }
+
+            composable(Screen.Category.route) {
+                CategoryScreen()
             }
         }
     }
