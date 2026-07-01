@@ -37,6 +37,26 @@ class TaskRepository {
             .delete()
     }
 
+    fun deleteAllTasks(
+        onSuccess: () -> Unit = {}
+    ) {
+
+        db.collection("Tasks")
+            .get()
+            .addOnSuccessListener { result ->
+
+                val batch = db.batch()
+
+                result.documents.forEach { document ->
+                    batch.delete(document.reference)
+                }
+
+                batch.commit().addOnSuccessListener {
+                    onSuccess()
+                }
+            }
+    }
+
     fun updateTask(task: Task) {
         db.collection("Tasks")
             .document(task.id)

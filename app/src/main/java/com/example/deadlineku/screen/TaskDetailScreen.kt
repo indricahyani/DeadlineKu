@@ -11,6 +11,8 @@ import com.example.deadlineku.model.Task
 import com.example.deadlineku.repository.TaskRepository
 import androidx.compose.material3.Button
 import androidx.navigation.NavController
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 
 
 @Composable
@@ -23,6 +25,10 @@ fun TaskDetailScreen(
 
     var task by remember {
         mutableStateOf<Task?>(null)
+    }
+
+    var showDeleteDialog by remember {
+        mutableStateOf(false)
     }
 
     LaunchedEffect(Unit) {
@@ -125,15 +131,56 @@ fun TaskDetailScreen(
 
             Button(
                 onClick = {
-
-                    repository.deleteTask(it.id)
-
-                    navController.popBackStack()
-
+                    showDeleteDialog = true
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Hapus Tugas")
+            }
+
+            if (showDeleteDialog) {
+
+                AlertDialog(
+
+                    onDismissRequest = {
+                        showDeleteDialog = false
+                    },
+
+                    title = {
+                        Text("Hapus Tugas")
+                    },
+
+                    text = {
+                        Text("Apakah yakin ingin menghapus tugas \"${it.title}\"?")
+                    },
+
+                    confirmButton = {
+
+                        TextButton(
+                            onClick = {
+
+                                repository.deleteTask(it.id)
+
+                                showDeleteDialog = false
+
+                                navController.popBackStack()
+                            }
+                        ) {
+                            Text("Hapus")
+                        }
+                    },
+
+                    dismissButton = {
+
+                        TextButton(
+                            onClick = {
+                                showDeleteDialog = false
+                            }
+                        ) {
+                            Text("Batal")
+                        }
+                    }
+                )
             }
         }
     }

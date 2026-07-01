@@ -26,8 +26,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Checkbox
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
+import com.example.deadlineku.model.Category
+import com.example.deadlineku.repository.CategoryRepository
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController) {
 
@@ -41,9 +49,28 @@ fun HomeScreen(navController: NavController) {
         mutableStateOf("")
     }
 
+    val categoryRepository = CategoryRepository()
+
+    var categoryList by remember {
+        mutableStateOf(listOf<Category>())
+    }
+
+    var selectedStatus by remember {
+        mutableStateOf("Semua")
+    }
+
+    var selectedCategory by remember {
+        mutableStateOf("Semua")
+    }
+
     LaunchedEffect(Unit) {
+
         repository.getTasks {
             taskList = it
+        }
+
+        categoryRepository.getCategories {
+            categoryList = it
         }
     }
 
@@ -75,21 +102,101 @@ fun HomeScreen(navController: NavController) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(2.dp))
+
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+
+                listOf(
+                    "Semua",
+                    "Belum Selesai",
+                    "Selesai"
+                ).forEach { status ->
+
+                    FilterChip(
+
+                        selected = selectedStatus == status,
+
+                        onClick = {
+                            selectedStatus = status
+                        },
+
+                        label = {
+                            Text(status)
+                        }
+                    )
+                }
+            }
+
+            Row(
+                modifier = Modifier.horizontalScroll(
+                    rememberScrollState()
+                ),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+
+                FilterChip(
+
+                    selected = selectedCategory == "Semua",
+
+                    onClick = {
+                        selectedCategory = "Semua"
+                    },
+
+                    label = {
+                        Text("Semua")
+                    }
+                )
+
+                categoryList.forEach { category ->
+
+                    FilterChip(
+
+                        selected = selectedCategory == category.name,
+
+                        onClick = {
+                            selectedCategory = category.name
+                        },
+
+                        label = {
+                            Text(category.name)
+                        }
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            val filteredTasks = taskList.filter {
+            Spacer(modifier = Modifier.height(16.dp))
 
-                it.title.contains(
-                    searchText,
-                    ignoreCase = true
-                ) ||
+            val filteredTasks = taskList.filter { task ->
 
-                        it.description.contains(
-                            searchText,
-                            ignoreCase = true
-                        )
+                val searchMatch =
+                    task.title.contains(searchText, true) ||
+                            task.description.contains(searchText, true)
+
+                val statusMatch =
+                    when (selectedStatus) {
+
+                        "Belum Selesai" ->
+                            !task.completed
+
+                        "Selesai" ->
+                            task.completed
+
+                        else ->
+                            true
+                    }
+
+                val categoryMatch =
+                    selectedCategory == "Semua" ||
+                            task.category == selectedCategory
+
+                searchMatch &&
+                        statusMatch &&
+                        categoryMatch
             }
 
             if (filteredTasks.isEmpty()) {

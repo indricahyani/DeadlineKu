@@ -25,6 +25,10 @@ fun CategoryScreen() {
         mutableStateOf("")
     }
 
+    var categoryToDelete by remember {
+        mutableStateOf<Category?>(null)
+    }
+
     fun loadCategories() {
         repository.getCategories {
             categoryList = it
@@ -106,20 +110,61 @@ fun CategoryScreen() {
 
                         IconButton(
                             onClick = {
-
-                                repository.deleteCategory(category.id)
-
-                                loadCategories()
+                                categoryToDelete = category
                             }
                         ) {
                             Icon(
                                 Icons.Default.Delete,
-                                contentDescription = null
+                                contentDescription = "Hapus Kategori"
                             )
                         }
                     }
                 }
             }
+        }
+
+        categoryToDelete?.let { selectedCategory ->
+
+            AlertDialog(
+                onDismissRequest = {
+                    categoryToDelete = null
+                },
+
+                title = {
+                    Text("Hapus Kategori")
+                },
+
+                text = {
+                    Text("Apakah yakin ingin menghapus kategori \"${selectedCategory.name}\"?")
+                },
+
+                confirmButton = {
+
+                    TextButton(
+                        onClick = {
+
+                            repository.deleteCategory(selectedCategory.id)
+
+                            loadCategories()
+
+                            categoryToDelete = null
+                        }
+                    ) {
+                        Text("Hapus")
+                    }
+                },
+
+                dismissButton = {
+
+                    TextButton(
+                        onClick = {
+                            categoryToDelete = null
+                        }
+                    ) {
+                        Text("Batal")
+                    }
+                }
+            )
         }
     }
 }
