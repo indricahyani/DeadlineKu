@@ -110,7 +110,7 @@ fun EditTaskScreen(
                     category = category,
                     deadlineDate = deadlineDate,
                     deadlineTime = deadlineTime,
-                    isCompleted = task?.isCompleted ?: false
+                    completed = task?.completed ?: false
                 )
 
                 repository.updateTask(updatedTask)

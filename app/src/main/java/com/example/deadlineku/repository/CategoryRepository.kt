@@ -2,6 +2,7 @@ package com.example.deadlineku.repository
 
 import com.example.deadlineku.model.Category
 import com.google.firebase.firestore.FirebaseFirestore
+import android.util.Log
 
 class CategoryRepository {
 
@@ -11,6 +12,8 @@ class CategoryRepository {
         onSuccess: (List<Category>) -> Unit
     ) {
 
+        Log.d("CATEGORY", "getCategories dipanggil")
+
         db.collection("Categories")
             .get()
             .addOnSuccessListener { result ->
@@ -19,10 +22,10 @@ class CategoryRepository {
 
                 for (document in result) {
 
-                    val category =
-                        document.toObject(Category::class.java)
-
-                    category.id = document.id
+                    val category = Category(
+                        id = document.id,
+                        name = document.getString("name") ?: ""
+                    )
 
                     categoryList.add(category)
                 }

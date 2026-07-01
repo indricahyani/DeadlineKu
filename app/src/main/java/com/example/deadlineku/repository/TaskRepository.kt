@@ -52,13 +52,29 @@ class TaskRepository {
             .get()
             .addOnSuccessListener { document ->
 
+                android.util.Log.d("DETAIL", document.data.toString())
+
                 if (document.exists()) {
+
                     val task = document.toObject(Task::class.java)
                     task?.id = document.id
+
+                    android.util.Log.d("DETAIL", "completed = ${task?.completed}")
+
                     onSuccess(task)
+
                 } else {
                     onSuccess(null)
                 }
             }
+    }
+
+    fun updateTaskStatus(
+        taskId: String,
+        completed: Boolean
+    ) {
+        db.collection("Tasks")
+            .document(taskId)
+            .update("completed", completed)
     }
 }

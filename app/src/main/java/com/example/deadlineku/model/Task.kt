@@ -7,5 +7,5 @@ data class Task(
     var category: String = "",
     var deadlineDate: String = "",
     var deadlineTime: String = "",
-    var isCompleted: Boolean = false
+    var completed: Boolean = false
 )

@@ -22,6 +22,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.Checkbox
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Arrangement
 
 
 @Composable
@@ -51,7 +55,7 @@ fun HomeScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp)
-        ) {
+        )   {
 
             Text(
                 text = "Daftar Tugas",
@@ -138,45 +142,71 @@ fun HomeScreen(navController: NavController) {
                                 }
                         ) {
 
-                            Column(
-                                modifier = Modifier.padding(16.dp)
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
 
-                                Text(
-                                    text = task.title,
-                                    style = MaterialTheme.typography.titleMedium
-                                )
+                                Column(
+                                    modifier = Modifier.weight(1f)
+                                ) {
 
-                                Spacer(modifier = Modifier.height(4.dp))
+                                    Text(
+                                        text = task.title,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
 
-                                Text(task.description)
+                                    Spacer(modifier = Modifier.height(4.dp))
 
-                                Spacer(modifier = Modifier.height(4.dp))
+                                    Text(task.description)
 
-                                AssistChip(
-                                    onClick = { },
-                                    label = {
-                                        Text(task.category)
-                                    }
-                                )
+                                    Spacer(modifier = Modifier.height(8.dp))
 
-                                Spacer(modifier = Modifier.height(8.dp))
+                                    AssistChip(
+                                        onClick = { },
+                                        label = {
+                                            Text(task.category)
+                                        },
+                                        colors = AssistChipDefaults.assistChipColors(
+                                            containerColor = getCategoryColor(task.category)
+                                        )
+                                    )
 
-                                Text(
-                                    text = "📅 ${task.deadlineDate}",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
+                                    Spacer(modifier = Modifier.height(8.dp))
 
-                                Text(
-                                    text = "🕒 ${task.deadlineTime}"
-                                )
+                                    Text("📅 ${task.deadlineDate}")
+                                    Text("🕒 ${task.deadlineTime}")
 
-                                Text(
-                                    text =
-                                        if (task.isCompleted)
+                                    Spacer(modifier = Modifier.height(8.dp))
+
+                                    Text(
+                                        text = if (task.completed)
                                             "✅ Selesai"
                                         else
                                             "⏳ Belum Selesai"
+                                    )
+                                }
+
+                                Checkbox(
+                                    checked = task.completed,
+                                    onCheckedChange = { checked ->
+
+                                        repository.updateTaskStatus(
+                                            task.id,
+                                            checked
+                                        )
+
+                                        taskList = taskList.map {
+
+                                            if (it.id == task.id)
+                                                it.copy(completed = checked)
+                                            else
+                                                it
+                                        }
+                                    }
                                 )
                             }
                         }
@@ -198,5 +228,15 @@ fun HomeScreen(navController: NavController) {
                 contentDescription = "Tambah Tugas"
             )
         }
+    }
+}
+
+fun getCategoryColor(category: String): Color {
+    return when (category) {
+        "Akademik" -> Color(0xFF2196F3)
+        "Organisasi" -> Color(0xFF4CAF50)
+        "Pribadi" -> Color(0xFF9C27B0)
+        "Kerja" -> Color(0xFFFF9800)
+        else -> Color.Gray
     }
 }

@@ -75,13 +75,13 @@ fun TaskDetailScreen(
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = if (it.isCompleted)
+                text = if (it.completed)
                     "Status: Selesai"
                 else
                     "Status: Belum Selesai"
             )
 
-            if (!it.isCompleted) {
+            if (!it.completed) {
 
                 Button(
                     onClick = {
@@ -93,7 +93,7 @@ fun TaskDetailScreen(
                             category = it.category,
                             deadlineDate = it.deadlineDate,
                             deadlineTime = it.deadlineTime,
-                            isCompleted = true
+                            completed = true
                         )
 
                         repository.updateTask(updatedTask)
