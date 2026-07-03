@@ -15,13 +15,16 @@ import com.example.deadlineku.navigation.Screen
 import androidx.compose.runtime.*
 import com.example.deadlineku.repository.TaskRepository
 import androidx.compose.material3.*
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun SettingsScreen(
     navController: NavController
 ) {
 
-    val repository = TaskRepository()
+    val context = LocalContext.current
+
+    val repository = TaskRepository(context)
 
     var showDeleteDialog by remember {
         mutableStateOf(false)
@@ -142,9 +145,11 @@ fun SettingsScreen(
                     TextButton(
                         onClick = {
 
-                            repository.deleteAllTasks()
+                            val success = repository.deleteAllTasks()
 
-                            showDeleteDialog = false
+                            if (success) {
+                                showDeleteDialog = false
+                            }
                         }
                     ) {
                         Text("Hapus")
@@ -196,7 +201,7 @@ fun SettingsScreen(
 
                         Text("• Kotlin")
                         Text("• Jetpack Compose")
-                        Text("• Firebase Firestore")
+                        Text("• SQLite")
                         Text("• Material 3")
 
                         Spacer(modifier = Modifier.height(12.dp))

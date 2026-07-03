@@ -71,7 +71,9 @@ fun AppNavigation() {
             ) { backStackEntry ->
 
                 val taskId =
-                    backStackEntry.arguments?.getString("taskId") ?: ""
+                    backStackEntry.arguments
+                        ?.getString("taskId")
+                        ?.toIntOrNull() ?: 0
 
                 TaskDetailScreen(
                     taskId = taskId,
@@ -84,7 +86,9 @@ fun AppNavigation() {
             ) { backStackEntry ->
 
                 val taskId =
-                    backStackEntry.arguments?.getString("taskId") ?: ""
+                    backStackEntry.arguments
+                        ?.getString("taskId")
+                        ?.toIntOrNull() ?: 0
 
                 EditTaskScreen(
                     taskId = taskId,

@@ -30,16 +30,19 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.rememberTimePickerState
 import java.util.Calendar
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.platform.LocalContext
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskScreen(
     navController: NavController
 ) {
+    val context = LocalContext.current
 
-    val repository = TaskRepository()
+    val repository = TaskRepository(context)
 
-    val categoryRepository = CategoryRepository()
+    val categoryRepository = CategoryRepository(context)
 
     var categoryList by remember {
         mutableStateOf(listOf<Category>())
@@ -50,9 +53,7 @@ fun AddTaskScreen(
     }
 
     LaunchedEffect(Unit) {
-        categoryRepository.getCategories {
-            categoryList = it
-        }
+        categoryList = categoryRepository.getCategories()
     }
 
     var title by remember { mutableStateOf("") }
@@ -212,9 +213,11 @@ fun AddTaskScreen(
                     completed = false
                 )
 
-                repository.addTask(task)
+                val success = repository.addTask(task)
 
-                navController.popBackStack()
+                if (success) {
+                    navController.popBackStack()
+                }
 
             },
             modifier = Modifier.fillMaxWidth()

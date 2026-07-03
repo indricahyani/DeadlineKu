@@ -33,13 +33,15 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
-
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController) {
 
-    val repository = TaskRepository()
+    val context = LocalContext.current
+
+    val repository = TaskRepository(context)
 
     var taskList by remember {
         mutableStateOf(listOf<Task>())
@@ -49,7 +51,7 @@ fun HomeScreen(navController: NavController) {
         mutableStateOf("")
     }
 
-    val categoryRepository = CategoryRepository()
+    val categoryRepository = CategoryRepository(context)
 
     var categoryList by remember {
         mutableStateOf(listOf<Category>())
@@ -64,14 +66,7 @@ fun HomeScreen(navController: NavController) {
     }
 
     LaunchedEffect(Unit) {
-
-        repository.getTasks {
-            taskList = it
-        }
-
-        categoryRepository.getCategories {
-            categoryList = it
-        }
+        taskList = repository.getTasks()
     }
 
     Box(
@@ -166,8 +161,6 @@ fun HomeScreen(navController: NavController) {
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -306,13 +299,7 @@ fun HomeScreen(navController: NavController) {
                                             checked
                                         )
 
-                                        taskList = taskList.map {
-
-                                            if (it.id == task.id)
-                                                it.copy(completed = checked)
-                                            else
-                                                it
-                                        }
+                                        taskList = repository.getTasks()
                                     }
                                 )
                             }

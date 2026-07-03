@@ -12,22 +12,23 @@ import com.example.deadlineku.model.Task
 import com.example.deadlineku.repository.TaskRepository
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun CalendarScreen() {
 
     val calendarState = rememberCalendarState()
 
-    val repository = TaskRepository()
+    val context = LocalContext.current
+
+    val repository = TaskRepository(context)
 
     var taskList by remember {
         mutableStateOf(listOf<Task>())
     }
 
     LaunchedEffect(Unit) {
-        repository.getTasks {
-            taskList = it
-        }
+        taskList = repository.getTasks()
     }
 
 

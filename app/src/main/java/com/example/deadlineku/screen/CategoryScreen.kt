@@ -11,11 +11,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.deadlineku.model.Category
 import com.example.deadlineku.repository.CategoryRepository
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun CategoryScreen() {
 
-    val repository = CategoryRepository()
+    val context = LocalContext.current
+
+    val repository = CategoryRepository(context)
 
     var categoryList by remember {
         mutableStateOf(listOf<Category>())
@@ -30,9 +33,7 @@ fun CategoryScreen() {
     }
 
     fun loadCategories() {
-        repository.getCategories {
-            categoryList = it
-        }
+        categoryList = repository.getCategories()
     }
 
     LaunchedEffect(Unit) {
@@ -70,15 +71,16 @@ fun CategoryScreen() {
 
                 if (categoryName.isNotBlank()) {
 
-                    repository.addCategory(
+                    val success = repository.addCategory(
                         Category(
                             name = categoryName
                         )
                     )
 
-                    categoryName = ""
-
-                    loadCategories()
+                    if (success) {
+                        categoryName = ""
+                        loadCategories()
+                    }
                 }
 
             },

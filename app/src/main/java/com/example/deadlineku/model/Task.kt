@@ -1,7 +1,7 @@
 package com.example.deadlineku.model
 
 data class Task(
-    var id: String = "",
+    var id: Int = 0,
     var title: String = "",
     var description: String = "",
     var category: String = "",

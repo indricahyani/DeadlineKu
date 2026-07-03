@@ -13,15 +13,18 @@ import androidx.compose.material3.Button
 import androidx.navigation.NavController
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
+import androidx.compose.ui.platform.LocalContext
 
 
 @Composable
 fun TaskDetailScreen(
-    taskId: String,
+    taskId: Int,
     navController: NavController
 ) {
 
-    val repository = TaskRepository()
+    val context = LocalContext.current
+
+    val repository = TaskRepository(context)
 
     var task by remember {
         mutableStateOf<Task?>(null)
@@ -32,9 +35,7 @@ fun TaskDetailScreen(
     }
 
     LaunchedEffect(Unit) {
-        repository.getTaskById(taskId) {
-            task = it
-        }
+        task = repository.getTaskById(taskId)
     }
 
     Column(
@@ -102,9 +103,11 @@ fun TaskDetailScreen(
                             completed = true
                         )
 
-                        repository.updateTask(updatedTask)
+                        val success = repository.updateTask(updatedTask)
 
-                        navController.popBackStack()
+                        if (success) {
+                            navController.popBackStack()
+                        }
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -159,11 +162,12 @@ fun TaskDetailScreen(
                         TextButton(
                             onClick = {
 
-                                repository.deleteTask(it.id)
+                                val success = repository.deleteTask(it.id)
 
-                                showDeleteDialog = false
-
-                                navController.popBackStack()
+                                if (success) {
+                                    showDeleteDialog = false
+                                    navController.popBackStack()
+                                }
                             }
                         ) {
                             Text("Hapus")

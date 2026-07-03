@@ -1,49 +1,22 @@
 package com.example.deadlineku.repository
 
+import android.content.Context
+import com.example.deadlineku.database.DatabaseHelper
 import com.example.deadlineku.model.Category
-import com.google.firebase.firestore.FirebaseFirestore
-import android.util.Log
 
-class CategoryRepository {
+class CategoryRepository(context: Context) {
 
-    private val db = FirebaseFirestore.getInstance()
+    private val db = DatabaseHelper(context)
 
-    fun getCategories(
-        onSuccess: (List<Category>) -> Unit
-    ) {
-
-        Log.d("CATEGORY", "getCategories dipanggil")
-
-        db.collection("Categories")
-            .get()
-            .addOnSuccessListener { result ->
-
-                val categoryList = mutableListOf<Category>()
-
-                for (document in result) {
-
-                    val category = Category(
-                        id = document.id,
-                        name = document.getString("name") ?: ""
-                    )
-
-                    categoryList.add(category)
-                }
-
-                onSuccess(categoryList)
-            }
+    fun getCategories(): List<Category> {
+        return db.getAllCategories()
     }
 
-    fun addCategory(category: Category) {
-
-        db.collection("Categories")
-            .add(category)
+    fun addCategory(category: Category): Boolean {
+        return db.insertCategory(category)
     }
 
-    fun deleteCategory(categoryId: String) {
-
-        db.collection("Categories")
-            .document(categoryId)
-            .delete()
+    fun deleteCategory(categoryId: Int): Boolean {
+        return db.deleteCategory(categoryId)
     }
 }

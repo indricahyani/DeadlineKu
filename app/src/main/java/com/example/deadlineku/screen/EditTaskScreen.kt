@@ -10,14 +10,17 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.deadlineku.model.Task
 import com.example.deadlineku.repository.TaskRepository
+import androidx.compose.ui.platform.LocalContext
 
 @Composable
 fun EditTaskScreen(
-    taskId: String,
+    taskId: Int,
     navController: NavController
 ) {
 
-    val repository = TaskRepository()
+    val context = LocalContext.current
+
+    val repository = TaskRepository(context)
 
     var task by remember {
         mutableStateOf<Task?>(null)
@@ -31,17 +34,15 @@ fun EditTaskScreen(
 
     LaunchedEffect(Unit) {
 
-        repository.getTaskById(taskId) {
+        task = repository.getTaskById(taskId)
 
-            task = it
+        task?.let {
 
-            if (it != null) {
-                title = it.title
-                description = it.description
-                category = it.category
-                deadlineDate = it.deadlineDate
-                deadlineTime = it.deadlineTime
-            }
+            title = it.title
+            description = it.description
+            category = it.category
+            deadlineDate = it.deadlineDate
+            deadlineTime = it.deadlineTime
         }
     }
 
@@ -113,9 +114,12 @@ fun EditTaskScreen(
                     completed = task?.completed ?: false
                 )
 
-                repository.updateTask(updatedTask)
+                val success = repository.updateTask(updatedTask)
 
-                navController.popBackStack()
+                if (success) {
+                    navController.popBackStack()
+                }
+
             },
             modifier = Modifier.fillMaxWidth()
         ) {
