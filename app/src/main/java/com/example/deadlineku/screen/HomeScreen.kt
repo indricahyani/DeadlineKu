@@ -22,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.Checkbox
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Arrangement
@@ -270,10 +269,7 @@ fun HomeScreen(navController: NavController) {
                                         onClick = { },
                                         label = {
                                             Text(task.category)
-                                        },
-                                        colors = AssistChipDefaults.assistChipColors(
-                                            containerColor = getCategoryColor(task.category)
-                                        )
+                                        }
                                     )
 
                                     Spacer(modifier = Modifier.height(8.dp))
@@ -326,12 +322,3 @@ fun HomeScreen(navController: NavController) {
     }
 }
 
-fun getCategoryColor(category: String): Color {
-    return when (category) {
-        "Akademik" -> Color(0xFF2196F3)
-        "Organisasi" -> Color(0xFF4CAF50)
-        "Pribadi" -> Color(0xFF9C27B0)
-        "Kerja" -> Color(0xFFFF9800)
-        else -> Color.Gray
-    }
-}

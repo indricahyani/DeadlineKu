@@ -55,7 +55,7 @@ fun AppNavigation() {
             }
 
             composable(Screen.Calendar.route) {
-                CalendarScreen()
+                CalendarScreen(navController)
             }
 
             composable(Screen.Settings.route) {
