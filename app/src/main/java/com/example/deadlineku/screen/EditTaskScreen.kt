@@ -9,9 +9,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.deadlineku.model.Task
+import com.example.deadlineku.model.Category
 import com.example.deadlineku.repository.TaskRepository
 import androidx.compose.ui.platform.LocalContext
+import com.example.deadlineku.repository.CategoryRepository
+import androidx.compose.material3.*
+import java.text.SimpleDateFormat
+import java.util.*
 
+
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditTaskScreen(
     taskId: Int,
@@ -21,6 +29,7 @@ fun EditTaskScreen(
     val context = LocalContext.current
 
     val repository = TaskRepository(context)
+    val categoryRepository = CategoryRepository(context)
 
     var task by remember {
         mutableStateOf<Task?>(null)
@@ -32,7 +41,29 @@ fun EditTaskScreen(
     var deadlineDate by remember { mutableStateOf("") }
     var deadlineTime by remember { mutableStateOf("") }
 
+    var categoryList by remember {
+        mutableStateOf(listOf<Category>())
+    }
+
+    var expanded by remember {
+        mutableStateOf(false)
+    }
+
+    var showDatePicker by remember {
+        mutableStateOf(false)
+    }
+
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = null
+    )
+
+    var showTimePicker by remember {
+        mutableStateOf(false)
+    }
+
     LaunchedEffect(Unit) {
+
+        categoryList = categoryRepository.getCategories()
 
         task = repository.getTaskById(taskId)
 
@@ -42,7 +73,23 @@ fun EditTaskScreen(
             description = it.description
             category = it.category
             deadlineDate = it.deadlineDate
+            try {
+
+                val formatter = SimpleDateFormat(
+                    "dd/MM/yyyy",
+                    Locale.getDefault()
+                )
+
+                formatter.timeZone = TimeZone.getTimeZone("UTC")
+
+                val date = formatter.parse(it.deadlineDate)
+
+                datePickerState.selectedDateMillis = date?.time
+
+            } catch (_: Exception) {
+            }
             deadlineTime = it.deadlineTime
+
         }
     }
 
@@ -74,29 +121,95 @@ fun EditTaskScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = category,
-            onValueChange = { category = it },
-            label = { Text("Kategori") },
-            modifier = Modifier.fillMaxWidth()
-        )
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = {
+                expanded = !expanded
+            }
+        ) {
+
+            OutlinedTextField(
+                value = category,
+                onValueChange = {},
+                readOnly = true,
+                label = {
+                    Text("Kategori")
+                },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(
+                        expanded = expanded
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .menuAnchor()
+            )
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = {
+                    expanded = false
+                }
+            ) {
+
+                categoryList.forEach { item ->
+
+                    DropdownMenuItem(
+                        text = {
+                            Text(item.name)
+                        },
+                        onClick = {
+
+                            category = item.name
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
             value = deadlineDate,
-            onValueChange = { deadlineDate = it },
-            label = { Text("Tanggal Deadline") },
-            modifier = Modifier.fillMaxWidth()
+            onValueChange = {},
+            readOnly = true,
+            label = {
+                Text("Tanggal Deadline")
+            },
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+
+                TextButton(
+                    onClick = {
+                        showDatePicker = true
+                    }
+                ) {
+                    Text("📅")
+                }
+            }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
             value = deadlineTime,
-            onValueChange = { deadlineTime = it },
-            label = { Text("Waktu Deadline") },
-            modifier = Modifier.fillMaxWidth()
+            onValueChange = {},
+            readOnly = true,
+            label = {
+                Text("Waktu Deadline")
+            },
+            modifier = Modifier.fillMaxWidth(),
+            trailingIcon = {
+
+                TextButton(
+                    onClick = {
+                        showTimePicker = true
+                    }
+                ) {
+                    Text("🕒")
+                }
+            }
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -125,5 +238,110 @@ fun EditTaskScreen(
         ) {
             Text("Perbarui Tugas")
         }
+    }
+
+    if (showDatePicker) {
+
+        DatePickerDialog(
+
+            onDismissRequest = {
+                showDatePicker = false
+            },
+
+            confirmButton = {
+
+                TextButton(
+                    onClick = {
+
+                        datePickerState.selectedDateMillis?.let {
+
+                            val formatter = SimpleDateFormat(
+                                "dd/MM/yyyy",
+                                Locale.getDefault()
+                            )
+
+                            deadlineDate = formatter.format(Date(it))
+                        }
+
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+
+            dismissButton = {
+
+                TextButton(
+                    onClick = {
+                        showDatePicker = false
+                    }
+                ) {
+                    Text("Batal")
+                }
+            }
+
+        ) {
+
+            DatePicker(
+                state = datePickerState
+            )
+        }
+    }
+
+    if (showTimePicker) {
+
+        val parts = deadlineTime.split(":")
+
+        val hour = parts.getOrNull(0)?.toIntOrNull() ?: 0
+        val minute = parts.getOrNull(1)?.toIntOrNull() ?: 0
+
+        val timePickerState = rememberTimePickerState(
+            initialHour = hour,
+            initialMinute = minute,
+            is24Hour = true
+        )
+
+        AlertDialog(
+
+            onDismissRequest = {
+                showTimePicker = false
+            },
+
+            confirmButton = {
+
+                TextButton(
+                    onClick = {
+
+                        deadlineTime =
+                            "%02d:%02d".format(
+                                timePickerState.hour,
+                                timePickerState.minute
+                            )
+
+                        showTimePicker = false
+                    }
+                ) {
+                    Text("OK")
+                }
+            },
+
+            dismissButton = {
+
+                TextButton(
+                    onClick = {
+                        showTimePicker = false
+                    }
+                ) {
+                    Text("Batal")
+                }
+            },
+
+            text = {
+                TimePicker(
+                    state = timePickerState
+                )
+            }
+        )
     }
 }

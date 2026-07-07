@@ -67,6 +67,7 @@ fun HomeScreen(navController: NavController) {
 
     LaunchedEffect(Unit) {
         taskList = repository.getTasks()
+        categoryList = categoryRepository.getCategories()
     }
 
     Box(
