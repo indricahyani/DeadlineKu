@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.deadlineku.screen.SplashScreen
 import com.example.deadlineku.screen.AddTaskScreen
 import com.example.deadlineku.screen.CalendarScreen
 import com.example.deadlineku.screen.HomeScreen
@@ -31,24 +32,37 @@ fun AppNavigation() {
 
         bottomBar = {
 
-            BottomNavBar(
+            if (
+                currentRoute == Screen.Home.route ||
+                currentRoute == Screen.Calendar.route ||
+                currentRoute == Screen.Settings.route
+            ) {
 
-                selectedItem = currentRoute,
+                BottomNavBar(
 
-                onItemSelected = { route ->
+                    selectedItem = currentRoute,
 
-                    navController.navigate(route)
-                }
-            )
+                    onItemSelected = { route ->
+
+                        navController.navigate(route)
+
+                    }
+                )
+
+            }
+
         }
 
     ) { paddingValues ->
 
         NavHost(
             navController = navController,
-            startDestination = Screen.Home.route,
+            startDestination = Screen.Splash.route,
             modifier = Modifier.padding(paddingValues)
         ) {
+            composable(Screen.Splash.route) {
+                SplashScreen(navController)
+            }
 
             composable(Screen.Home.route) {
                 HomeScreen(navController)
