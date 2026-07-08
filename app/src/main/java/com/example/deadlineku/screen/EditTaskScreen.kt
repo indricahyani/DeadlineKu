@@ -41,6 +41,14 @@ fun EditTaskScreen(
     var deadlineDate by remember { mutableStateOf("") }
     var deadlineTime by remember { mutableStateOf("") }
 
+    var showValidationDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var validationMessage by remember {
+        mutableStateOf("")
+    }
+
     var categoryList by remember {
         mutableStateOf(listOf<Category>())
     }
@@ -217,6 +225,35 @@ fun EditTaskScreen(
         Button(
             onClick = {
 
+                val errors = mutableListOf<String>()
+
+                if (title.isBlank()) {
+                    errors.add("• Judul tugas")
+                }
+
+                if (category.isBlank()) {
+                    errors.add("• Kategori")
+                }
+
+                if (deadlineDate.isBlank()) {
+                    errors.add("• Tanggal deadline")
+                }
+
+                if (deadlineTime.isBlank()) {
+                    errors.add("• Waktu deadline")
+                }
+
+                if (errors.isNotEmpty()) {
+
+                    validationMessage =
+                        "Mohon lengkapi data berikut:\n\n" +
+                                errors.joinToString("\n")
+
+                    showValidationDialog = true
+
+                    return@Button
+                }
+
                 val updatedTask = Task(
                     id = taskId,
                     title = title,
@@ -343,5 +380,37 @@ fun EditTaskScreen(
                 )
             }
         )
+    }
+
+    if (showValidationDialog) {
+
+        AlertDialog(
+
+            onDismissRequest = {
+                showValidationDialog = false
+            },
+
+            title = {
+                Text("Data Belum Lengkap")
+            },
+
+            text = {
+                Text(validationMessage)
+            },
+
+            confirmButton = {
+
+                TextButton(
+                    onClick = {
+                        showValidationDialog = false
+                    }
+                ) {
+                    Text("Mengerti")
+                }
+
+            }
+
+        )
+
     }
 }

@@ -33,6 +33,21 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.ui.platform.LocalContext
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.util.Locale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
+import androidx.compose.material3.CheckboxDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,8 +95,11 @@ fun HomeScreen(navController: NavController) {
         )   {
 
             Text(
-                text = "Daftar Tugas",
-                style = MaterialTheme.typography.headlineMedium
+                text = "DeadlineKu",
+                style = MaterialTheme.typography.headlineLarge.copy(
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
             )
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -94,75 +112,76 @@ fun HomeScreen(navController: NavController) {
                 label = {
                     Text("Cari tugas")
                 },
+                shape = RoundedCornerShape(24.dp),
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            Row(
-                modifier = Modifier.horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
 
-                listOf(
-                    "Semua",
-                    "Belum Selesai",
-                    "Selesai"
-                ).forEach { status ->
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
 
-                    FilterChip(
+                    listOf(
+                        "Semua",
+                        "Belum Selesai",
+                        "Selesai"
+                    ).forEach { status ->
 
-                        selected = selectedStatus == status,
-
-                        onClick = {
-                            selectedStatus = status
-                        },
-
-                        label = {
-                            Text(status)
-                        }
-                    )
-                }
-            }
-
-            Row(
-                modifier = Modifier.horizontalScroll(
-                    rememberScrollState()
-                ),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-
-                FilterChip(
-
-                    selected = selectedCategory == "Semua",
-
-                    onClick = {
-                        selectedCategory = "Semua"
-                    },
-
-                    label = {
-                        Text("Semua")
+                        FilterChip(
+                            modifier = Modifier.height(34.dp),
+                            selected = selectedStatus == status,
+                            onClick = {
+                                selectedStatus = status
+                            },
+                            shape = RoundedCornerShape(50.dp),
+                            label = {
+                                Text(status)
+                            }
+                        )
                     }
-                )
+                }
 
-                categoryList.forEach { category ->
+                Row(
+                    modifier = Modifier.horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
 
                     FilterChip(
-
-                        selected = selectedCategory == category.name,
-
+                        modifier = Modifier.height(34.dp),
+                        selected = selectedCategory == "Semua",
                         onClick = {
-                            selectedCategory = category.name
+                            selectedCategory = "Semua"
                         },
-
+                        shape = RoundedCornerShape(50.dp),
                         label = {
-                            Text(category.name)
+                            Text("Semua")
                         }
                     )
+
+                    categoryList.forEach { category ->
+
+                        FilterChip(
+                            modifier = Modifier.height(34.dp),
+                            selected = selectedCategory == category.name,
+                            onClick = {
+                                selectedCategory = category.name
+                            },
+                            shape = RoundedCornerShape(50.dp),
+                            label = {
+                                Text(category.name)
+                            }
+                        )
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
             val filteredTasks = taskList.filter { task ->
 
@@ -192,7 +211,21 @@ fun HomeScreen(navController: NavController) {
                         categoryMatch
             }
 
-            if (filteredTasks.isEmpty()) {
+            val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+            val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+            val sortedTasks = filteredTasks.sortedWith(
+                compareBy<Task>(
+                    {
+                        LocalDate.parse(it.deadlineDate, dateFormatter)
+                    },
+                    {
+                        LocalTime.parse(it.deadlineTime, timeFormatter)
+                    }
+                )
+            )
+
+            if (sortedTasks.isEmpty()) {
 
                 Column(
                     modifier = Modifier
@@ -231,15 +264,25 @@ fun HomeScreen(navController: NavController) {
 
                 LazyColumn {
 
-                    items(filteredTasks) { task ->
+                    items(sortedTasks) { task ->
 
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(bottom = 8.dp)
+                                .padding(bottom = 12.dp)
                                 .clickable {
                                     navController.navigate("task_detail/${task.id}")
-                                }
+                                },
+
+                            shape = RoundedCornerShape(20.dp),
+
+                            elevation = CardDefaults.cardElevation(
+                                defaultElevation = 4.dp
+                            ),
+
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            )
                         ) {
 
                             Row(
@@ -254,37 +297,82 @@ fun HomeScreen(navController: NavController) {
                                     modifier = Modifier.weight(1f)
                                 ) {
 
-                                    Text(
-                                        text = task.title,
-                                        style = MaterialTheme.typography.titleMedium
-                                    )
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+
+                                        Surface(
+                                            shape = RoundedCornerShape(8.dp),
+                                            color = Color(0xFFE8F0FF)
+                                        ) {
+
+                                            Text(
+                                                text = task.category,
+                                                modifier = Modifier.padding(
+                                                    horizontal = 8.dp,
+                                                    vertical = 4.dp
+                                                ),
+                                                color = Color(0xFF4F7CFF),
+                                                style = MaterialTheme.typography.labelSmall
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.width(8.dp))
+
+                                        Text(
+                                            text = task.title,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 18.sp,
+                                            style = MaterialTheme.typography.titleMedium
+                                        )
+                                    }
+
+                                    if (task.description.isNotBlank()) {
+
+                                        Spacer(modifier = Modifier.height(2.dp))
+
+                                        Text(
+                                            text = task.description,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                    } else {
+                                        Spacer(modifier = Modifier.height(1.dp))
+                                    }
 
                                     Spacer(modifier = Modifier.height(4.dp))
 
-                                    Text(task.description)
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
 
-                                    Spacer(modifier = Modifier.height(8.dp))
+                                        Icon(
+                                            imageVector = Icons.Default.AccessTime,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp)
+                                        )
 
-                                    AssistChip(
-                                        onClick = { },
-                                        label = {
-                                            Text(task.category)
-                                        }
-                                    )
+                                        Spacer(modifier = Modifier.width(4.dp))
 
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    Text("📅 ${task.deadlineDate}")
-                                    Text("🕒 ${task.deadlineTime}")
-
-                                    Spacer(modifier = Modifier.height(8.dp))
-
-                                    Text(
-                                        text = if (task.completed)
-                                            "✅ Selesai"
-                                        else
-                                            "⏳ Belum Selesai"
-                                    )
+                                        Text(
+                                            text = getDeadlineText(
+                                                task.deadlineDate,
+                                                task.deadlineTime
+                                            ),
+                                            color =
+                                                if (
+                                                    isOverdue(
+                                                        task.deadlineDate,
+                                                        task.completed
+                                                    )
+                                                )
+                                                    MaterialTheme.colorScheme.error
+                                                else
+                                                    MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
                                 }
 
                                 Checkbox(
@@ -297,7 +385,10 @@ fun HomeScreen(navController: NavController) {
                                         )
 
                                         taskList = repository.getTasks()
-                                    }
+                                    },
+                                    colors = CheckboxDefaults.colors(
+                                        checkedColor = MaterialTheme.colorScheme.primary
+                                    )
                                 )
                             }
                         }
@@ -312,7 +403,12 @@ fun HomeScreen(navController: NavController) {
             },
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(16.dp)
+                .padding(16.dp),
+            containerColor = MaterialTheme.colorScheme.primary,
+
+            contentColor = Color.White,
+
+            shape = RoundedCornerShape(32.dp)
         ) {
             Icon(
                 imageVector = Icons.Default.Add,
@@ -322,3 +418,93 @@ fun HomeScreen(navController: NavController) {
     }
 }
 
+fun getDeadlineStatus(
+    deadlineDate: String,
+    completed: Boolean
+): String {
+
+    if (completed) {
+        return "✅ Selesai"
+    }
+
+    val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+    val deadline = LocalDate.parse(deadlineDate, formatter)
+
+    val today = LocalDate.now()
+
+    val days = ChronoUnit.DAYS.between(today, deadline)
+
+    return when {
+
+        days < 0 ->
+            "🔴 Terlambat"
+
+        days == 0L ->
+            "🟠 Hari Ini"
+
+        days == 1L ->
+            "🟡 Besok"
+
+        else ->
+            "📅 ${days} Hari Lagi"
+    }
+}
+
+fun formatDeadlineDate(date: String): String {
+
+    val inputFormatter =
+        DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+    val outputFormatter =
+        DateTimeFormatter.ofPattern(
+            "EEEE, d MMMM yyyy",
+            Locale("id", "ID")
+        )
+
+    return LocalDate
+        .parse(date, inputFormatter)
+        .format(outputFormatter)
+}
+
+fun getDeadlineText(
+    deadlineDate: String,
+    deadlineTime: String
+): String {
+
+    val formatter =
+        DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+    val deadline =
+        LocalDate.parse(deadlineDate, formatter)
+
+    val today = LocalDate.now()
+
+    return when {
+
+        deadline.isEqual(today) ->
+            "Hari Ini • $deadlineTime"
+
+        deadline.isEqual(today.plusDays(1)) ->
+            "Besok • $deadlineTime"
+
+        else ->
+            "${formatDeadlineDate(deadlineDate)} • $deadlineTime"
+    }
+}
+
+fun isOverdue(
+    deadlineDate: String,
+    completed: Boolean
+): Boolean {
+
+    if (completed) return false
+
+    val formatter =
+        DateTimeFormatter.ofPattern("dd/MM/yyyy")
+
+    val deadline =
+        LocalDate.parse(deadlineDate, formatter)
+
+    return deadline.isBefore(LocalDate.now())
+}

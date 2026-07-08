@@ -58,4 +58,5 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.0")
     implementation("io.github.boguszpawlowski.composecalendar:composecalendar:1.4.0")
     implementation("io.github.boguszpawlowski.composecalendar:kotlinx-datetime:1.4.0")
+    implementation("androidx.compose.material:material-icons-extended")
 }
