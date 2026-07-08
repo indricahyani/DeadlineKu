@@ -19,7 +19,6 @@ import com.example.deadlineku.model.Category
 import com.example.deadlineku.repository.CategoryRepository
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DatePickerState
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import java.text.SimpleDateFormat
@@ -32,6 +31,27 @@ import java.util.Calendar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.platform.LocalContext
 import com.example.deadlineku.navigation.Screen
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CalendarToday
+import androidx.compose.material.icons.outlined.AccessTime
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.clickable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.IconButton
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material.icons.filled.LocalOffer
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,6 +67,10 @@ fun AddTaskScreen(
 
     var categoryList by remember {
         mutableStateOf(listOf<Category>())
+    }
+
+    var showCategorySheet by remember {
+        mutableStateOf(false)
     }
 
     var expanded by remember {
@@ -91,186 +115,296 @@ fun AddTaskScreen(
         mutableStateOf("")
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFF6F8FC)
     ) {
 
-        Text(
-            text = "Tambah Tugas",
-            style = MaterialTheme.typography.headlineMedium
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = title,
-            onValueChange = { title = it },
-            label = { Text("Judul Tugas") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("Deskripsi") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = {
-
-                if (categoryList.isEmpty()) {
-                    showCategoryDialog = true
-                } else {
-                    expanded = !expanded
-                }
-
-            }
+        Column(
+            modifier = Modifier.fillMaxSize()
         ) {
 
-            OutlinedTextField(
-                value = category,
-                onValueChange = {},
-                readOnly = true,
-                label = {
-                    Text("Kategori")
-                },
-                trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(
-                        expanded = expanded
-                    )
-                },
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .menuAnchor()
-            )
-
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = {
-                    expanded = false
-                }
+                    .padding(
+                        horizontal = 12.dp,
+                        vertical = 16.dp
+                    ),
+                verticalAlignment = Alignment.CenterVertically
             ) {
 
-                categoryList.forEach { item ->
+                IconButton(
+                    onClick = {
+                        navController.popBackStack()
+                    }
+                ) {
 
-                    DropdownMenuItem(
-                        text = {
-                            Text(item.name)
-                        },
-                        onClick = {
-
-                            category = item.name
-                            expanded = false
-                        }
+                    Icon(
+                        Icons.Default.ArrowBack,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
                     )
-                }
-            }
-        }
 
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = deadlineDate,
-            onValueChange = {},
-            readOnly = true,
-            label = {
-                Text("Tanggal Deadline")
-            },
-            modifier = Modifier
-                .fillMaxWidth(),
-            trailingIcon = {
-                TextButton(
-                    onClick = {
-                        showDatePicker = true
-                    }
-                ) {
-                    Text("📅")
-                }
-            }
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = deadlineTime,
-            onValueChange = {},
-            readOnly = true,
-            label = {
-                Text("Waktu Deadline")
-            },
-            trailingIcon = {
-                TextButton(
-                    onClick = {
-                        showTimePicker = true
-                    }
-                ) {
-                    Text("🕒")
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-
-                val errors = mutableListOf<String>()
-
-                if (title.isBlank()) {
-                    errors.add("• Judul tugas")
                 }
 
-                if (category.isBlank()) {
-                    errors.add("• Kategori")
-                }
-
-                if (deadlineDate.isBlank()) {
-                    errors.add("• Tanggal deadline")
-                }
-
-                if (deadlineTime.isBlank()) {
-                    errors.add("• Waktu deadline")
-                }
-
-                if (errors.isNotEmpty()) {
-
-                    validationMessage =
-                        "Mohon lengkapi data berikut:\n\n" +
-                                errors.joinToString("\n")
-
-                    showValidationDialog = true
-
-                    return@Button
-                }
-
-                val task = Task(
-                    title = title,
-                    description = description,
-                    category = category,
-                    deadlineDate = deadlineDate,
-                    deadlineTime = deadlineTime,
-                    completed = false
+                Text(
+                    text = "Tambah Tugas",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
                 )
 
-                val success = repository.addTask(task)
+            }
 
-                if (success) {
-                    navController.popBackStack()
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 20.dp)
+            ) {
+
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = {
+                        title = it
+                    },
+                    label = {
+                        Text("Judul Tugas")
+                    },
+                    placeholder = {
+                        Text("Contoh: Laporan PBKDF2")
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = Color(0xFFD9DEE8),
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = {
+                        description = it
+                    },
+                    label = {
+                        Text("Deskripsi")
+                    },
+                    placeholder = {
+                        Text("Tambahkan catatan...")
+                    },
+                    minLines = 4,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = MaterialTheme.colorScheme.primary,
+                        unfocusedBorderColor = Color(0xFFD9DEE8),
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            if (categoryList.isEmpty()) {
+                                showCategoryDialog = true
+                            } else {
+                                showCategorySheet = true
+                            }
+                        }
+                ) {
+
+                    OutlinedTextField(
+                        value = category,
+                        onValueChange = {},
+                        readOnly = true,
+                        enabled = false,
+                        modifier = Modifier.fillMaxWidth(),
+                        label = {
+                            Text("Kategori")
+                        },
+                        placeholder = {
+                            Text("Pilih kategori")
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Folder,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        shape = RoundedCornerShape(18.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledContainerColor = Color.White,
+                            disabledBorderColor = Color(0xFFD9DEE8),
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.primary,
+                            disabledTrailingIconColor = MaterialTheme.colorScheme.primary,
+                            disabledLabelColor = Color.Gray
+                        )
+                    )
+
                 }
 
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Simpan Tugas")
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            showDatePicker = true
+                        }
+                ) {
+
+                    OutlinedTextField(
+                        value = deadlineDate,
+                        onValueChange = {},
+                        enabled = false,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp),
+                        label = {
+                            Text("Tanggal Deadline")
+                        },
+                        placeholder = {
+                            Text("Pilih tanggal")
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.CalendarToday,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        shape = RoundedCornerShape(18.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledContainerColor = Color.White,
+                            disabledBorderColor = Color(0xFFD9DEE8),
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.primary,
+                            disabledLabelColor = Color.Gray
+                        )
+                    )
+
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            showTimePicker = true
+                        }
+                ) {
+
+                    OutlinedTextField(
+                        value = deadlineTime,
+                        onValueChange = {},
+                        enabled = false,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(60.dp),
+                        label = {
+                            Text("Waktu Deadline")
+                        },
+                        placeholder = {
+                            Text("Pilih waktu")
+                        },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.AccessTime,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        },
+                        shape = RoundedCornerShape(18.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledContainerColor = Color.White,
+                            disabledBorderColor = Color(0xFFD9DEE8),
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.primary,
+                            disabledLabelColor = Color.Gray
+                        )
+                    )
+
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = {
+
+                        val errors = mutableListOf<String>()
+
+                        if (title.isBlank()) {
+                            errors.add("• Judul tugas")
+                        }
+
+                        if (category.isBlank()) {
+                            errors.add("• Kategori")
+                        }
+
+                        if (deadlineDate.isBlank()) {
+                            errors.add("• Tanggal deadline")
+                        }
+
+                        if (deadlineTime.isBlank()) {
+                            errors.add("• Waktu deadline")
+                        }
+
+                        if (errors.isNotEmpty()) {
+
+                            validationMessage =
+                                "Mohon lengkapi data berikut:\n\n" +
+                                        errors.joinToString("\n")
+
+                            showValidationDialog = true
+
+                            return@Button
+                        }
+
+                        val task = Task(
+                            title = title,
+                            description = description,
+                            category = category,
+                            deadlineDate = deadlineDate,
+                            deadlineTime = deadlineTime,
+                            completed = false
+                        )
+
+                        val success = repository.addTask(task)
+
+                        if (success) {
+                            navController.popBackStack()
+                        }
+
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(58.dp),
+                    shape = RoundedCornerShape(18.dp)
+                ) {
+                    Text("Simpan Tugas")
+                }
+            }
         }
     }
 
@@ -449,6 +583,68 @@ fun AddTaskScreen(
             }
 
         )
+
+    }
+
+    if (showCategorySheet) {
+
+        ModalBottomSheet(
+            onDismissRequest = {
+                showCategorySheet = false
+            }
+        ) {
+
+            Text(
+                text = "Pilih Kategori",
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(20.dp)
+            )
+
+            categoryList.forEach { item ->
+
+                OutlinedCard(
+                    onClick = {
+                        category = item.name
+                        showCategorySheet = false
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(
+                        1.dp,
+                        Color(0xFFD9DEE8)
+                    )
+                ) {
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+
+                        Icon(
+                            imageVector = Icons.Default.LocalOffer,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Text(
+                            text = item.name,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+
+                    }
+
+                }
+
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+        }
 
     }
 }

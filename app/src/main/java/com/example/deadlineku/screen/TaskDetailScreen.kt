@@ -14,6 +14,33 @@ import androidx.navigation.NavController
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.CheckCircleOutline
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material.icons.filled.CheckCircleOutline
+import androidx.compose.material.icons.filled.DeleteOutline
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 
 
 @Composable
@@ -38,154 +65,428 @@ fun TaskDetailScreen(
         task = repository.getTaskById(taskId)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFF6F8FC)
     ) {
 
-        Text(
-            text = "Detail Tugas",
-            style = MaterialTheme.typography.headlineMedium
-        )
+        Column(
+            modifier = Modifier
+                .padding(horizontal = 10.dp)
+                .padding(top = 16.dp)
+                .fillMaxSize()
+        ) {
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-        task?.let {
-
-            Text(
-                text = it.title,
-                style = MaterialTheme.typography.headlineSmall
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "Deskripsi",
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Text(it.description)
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = "Kategori: ${it.category}"
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "Deadline: ${it.deadlineDate} ${it.deadlineTime}"
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = if (it.completed)
-                    "Status: Selesai"
-                else
-                    "Status: Belum Selesai"
-            )
-
-            if (!it.completed) {
-
-                Button(
+                IconButton(
                     onClick = {
-
-                        val updatedTask = Task(
-                            id = it.id,
-                            title = it.title,
-                            description = it.description,
-                            category = it.category,
-                            deadlineDate = it.deadlineDate,
-                            deadlineTime = it.deadlineTime,
-                            completed = true
-                        )
-
-                        val success = repository.updateTask(updatedTask)
-
-                        if (success) {
-                            navController.popBackStack()
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth()
+                        navController.popBackStack()
+                    }
                 ) {
-                    Text("Tandai Selesai")
+
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Detail Tugas",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
+
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = {
-                    navController.navigate("edit_task/${it.id}")
-                },
-                modifier = Modifier.fillMaxWidth()
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 10.dp)
             ) {
-                Text("Edit Tugas")
-            }
+                task?.let {
 
-            Spacer(modifier = Modifier.height(8.dp))
+                    Surface(
+                        color = Color(0xFFE8F0FF),
+                        shape = RoundedCornerShape(50.dp)
+                    ) {
 
-            Button(
-                onClick = {
-                    showDeleteDialog = true
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Hapus Tugas")
-            }
+                        Text(
+                            text = it.category,
+                            modifier = Modifier.padding(
+                                horizontal = 14.dp,
+                                vertical = 6.dp
+                            ),
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
 
-            if (showDeleteDialog) {
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                AlertDialog(
+                    Text(
+                        text = it.title,
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
 
-                    onDismissRequest = {
-                        showDeleteDialog = false
-                    },
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    title = {
-                        Text("Hapus Tugas")
-                    },
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White
+                        ),
+                        elevation = CardDefaults.cardElevation(4.dp)
+                    ) {
 
-                    text = {
-                        Text("Apakah yakin ingin menghapus tugas \"${it.title}\"?")
-                    },
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
 
-                    confirmButton = {
+                            // TANGGAL
+                            Row(
+                                modifier = Modifier.weight(1f),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
 
-                        TextButton(
+                                Box(
+                                    modifier = Modifier
+                                        .size(46.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.primary,
+                                            CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+
+                                    Icon(
+                                        Icons.Default.CalendarMonth,
+                                        contentDescription = null,
+                                        tint = Color.White
+                                    )
+
+                                }
+
+                                Spacer(modifier = Modifier.width(10.dp))
+
+                                Column {
+
+                                    Text(
+                                        "Tanggal Deadline",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = Color.Gray
+                                    )
+
+                                    Text(
+                                        it.deadlineDate,
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+                                }
+
+                            }
+
+                            // WAKTU
+                            Row(
+                                modifier = Modifier.weight(1f),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+
+                                Box(
+                                    modifier = Modifier
+                                        .size(46.dp)
+                                        .background(
+                                            Color(0xFFE9EEF8),
+                                            CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
+
+                                    Icon(
+                                        Icons.Default.AccessTime,
+                                        contentDescription = null,
+                                        tint = Color.Gray
+                                    )
+
+                                }
+
+                                Spacer(modifier = Modifier.width(10.dp))
+
+                                Column {
+
+                                    Text(
+                                        "Waktu Deadline",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = Color.Gray
+                                    )
+
+                                    Text(
+                                        it.deadlineTime,
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = "Deskripsi",
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            Color(0xFFE3E8EF)
+                        ),
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = 2.dp
+                        )
+                    ) {
+
+                        Text(
+                            text =
+                                if (it.description.isBlank())
+                                    "Tidak ada deskripsi."
+                                else
+                                    it.description,
+                            modifier = Modifier.padding(18.dp),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color =
+                                if (it.description.isBlank())
+                                    Color.Gray
+                                else
+                                    MaterialTheme.colorScheme.onSurface
+                        )
+
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    if (!it.completed) {
+
+                        Button(
                             onClick = {
 
-                                val success = repository.deleteTask(it.id)
+                                val updatedTask = it.copy(
+                                    completed = true
+                                )
+
+                                val success = repository.updateTask(updatedTask)
 
                                 if (success) {
-                                    showDeleteDialog = false
                                     navController.popBackStack()
                                 }
-                            }
-                        ) {
-                            Text("Hapus")
-                        }
-                    },
 
-                    dismissButton = {
-
-                        TextButton(
-                            onClick = {
-                                showDeleteDialog = false
-                            }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(18.dp)
                         ) {
-                            Text("Batal")
+
+                            Icon(
+                                Icons.Default.CheckCircleOutline,
+                                contentDescription = null
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Text(
+                                "Tandai Selesai",
+                                fontWeight = FontWeight.Bold
+                            )
+
                         }
+
+                    } else {
+
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = RoundedCornerShape(18.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFE8F5E9)
+                            )
+                        ) {
+
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+
+                                Icon(
+                                    Icons.Default.CheckCircleOutline,
+                                    null,
+                                    tint = Color(0xFF2E7D32)
+                                )
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Text(
+                                    "Tugas Sudah Selesai",
+                                    color = Color(0xFF2E7D32),
+                                    fontWeight = FontWeight.Bold
+                                )
+
+                            }
+
+                        }
+
                     }
-                )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+
+                        OutlinedButton(
+
+                            onClick = {
+
+                                navController.navigate("edit_task/${it.id}")
+
+                            },
+
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(54.dp),
+
+                            shape = RoundedCornerShape(18.dp)
+
+                        ) {
+
+                            Icon(
+                                Icons.Default.Edit,
+                                null
+                            )
+
+                            Spacer(Modifier.width(6.dp))
+
+                            Text("Edit")
+
+                        }
+
+                        OutlinedButton(
+
+                            onClick = {
+
+                                showDeleteDialog = true
+
+                            },
+
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(54.dp),
+
+                            shape = RoundedCornerShape(18.dp),
+
+                            colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                                contentColor = Color.Red
+                            )
+
+                        ) {
+
+                            Icon(
+                                Icons.Default.DeleteOutline,
+                                null
+                            )
+
+                            Spacer(Modifier.width(6.dp))
+
+                            Text("Hapus")
+
+                        }
+
+                    }
+
+                    if (showDeleteDialog) {
+
+                        AlertDialog(
+
+                            onDismissRequest = {
+                                showDeleteDialog = false
+                            },
+
+                            title = {
+                                Text("Hapus Tugas")
+                            },
+
+                            text = {
+                                Text("Apakah yakin ingin menghapus tugas \"${it.title}\"?")
+                            },
+
+                            confirmButton = {
+
+                                TextButton(
+                                    colors = ButtonDefaults.textButtonColors(
+                                        contentColor = Color.Red
+                                    ),
+                                    onClick = {
+
+                                        val success = repository.deleteTask(it.id)
+
+                                        if (success) {
+                                            showDeleteDialog = false
+                                            navController.popBackStack()
+                                        }
+                                    }
+                                ) {
+                                    Text("Hapus")
+                                }
+                            },
+
+                            dismissButton = {
+
+                                TextButton(
+                                    colors = ButtonDefaults.textButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.primary
+                                    ),
+                                    onClick = {
+                                        showDeleteDialog = false
+                                    }
+                                ) {
+                                    Text("Batal")
+                                }
+                            }
+                        )
+                    }
+                }
             }
+
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
