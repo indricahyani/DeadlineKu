@@ -51,6 +51,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import com.example.deadlineku.navigation.Screen
+import androidx.compose.material.icons.filled.EventBusy
 
 @Composable
 fun CalendarScreen(
@@ -399,13 +400,15 @@ fun CalendarScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 40.dp),
+                                .padding(top = 20.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
 
-                            Text(
-                                text = "📅",
-                                style = MaterialTheme.typography.displaySmall
+                            Icon(
+                                imageVector = Icons.Default.EventBusy,
+                                contentDescription = null,
+                                modifier = Modifier.size(72.dp),
+                                tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                             )
 
                             Spacer(modifier = Modifier.height(8.dp))

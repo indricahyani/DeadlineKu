@@ -14,6 +14,21 @@ import com.example.deadlineku.repository.CategoryRepository
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.material.icons.filled.Edit
 import androidx.navigation.NavController
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Folder
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.foundation.shape.RoundedCornerShape
 
 @Composable
 fun CategoryScreen(
@@ -66,349 +81,451 @@ fun CategoryScreen(
         loadCategories()
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = Color(0xFFF6F8FC)
     ) {
 
-        Text(
-            text = "Kelola Kategori",
-            style = MaterialTheme.typography.headlineMedium
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
-        OutlinedTextField(
-            value = categoryName,
-            onValueChange = {
-                categoryName = it
-            },
-            label = {
-                Text("Nama Kategori")
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
+                IconButton(
+                    onClick = {
+                        navController.popBackStack()
+                    }
+                ) {
 
-        Spacer(modifier = Modifier.height(8.dp))
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
 
-        Button(
-            onClick = {
+                }
 
-                if (categoryName.isNotBlank()) {
+                Text(
+                    text = "Kelola Kategori",
+                    style = MaterialTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
-                    if (
-                        repository.isCategoryExists(
-                            formatCategoryName(categoryName)
-                        )
-                    ) {
+            Spacer(modifier = Modifier.height(16.dp))
 
-                        showDuplicateDialog = true
+            OutlinedTextField(
+                value = categoryName,
+                onValueChange = {
+                    categoryName = it
+                },
+                singleLine = true,
+                label = {
+                    Text("Nama Kategori")
+                },
+                placeholder = {
+                    Text("Contoh: Kuliah")
+                },
+                leadingIcon = {
 
-                    } else {
+                    Icon(
+                        imageVector = Icons.Default.Folder,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
 
-                        val success = repository.addCategory(
-                            Category(
-                                name = formatCategoryName(categoryName)
+                },
+                shape = RoundedCornerShape(18.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedBorderColor = Color(0xFFD9DEE8),
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = {
+
+                    if (categoryName.isNotBlank()) {
+
+                        if (
+                            repository.isCategoryExists(
+                                formatCategoryName(categoryName)
                             )
-                        )
+                        ) {
 
-                        if (success) {
+                            showDuplicateDialog = true
 
-                            categoryName = ""
+                        } else {
 
-                            loadCategories()
+                            val success = repository.addCategory(
+                                Category(
+                                    name = formatCategoryName(categoryName)
+                                )
+                            )
 
-                            if (openedFromAddTask) {
-                                navController.popBackStack()
+                            if (success) {
+
+                                categoryName = ""
+
+                                loadCategories()
+
+                                if (openedFromAddTask) {
+                                    navController.popBackStack()
+                                }
                             }
                         }
                     }
-                }
 
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Tambah Kategori")
-        }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(54.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) {
 
-        Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    "Tambah Kategori",
+                    fontWeight = FontWeight.SemiBold
+                )
 
-        LazyColumn {
+            }
 
-            items(categoryList) { category ->
+            Spacer(modifier = Modifier.height(24.dp))
 
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
-                ) {
+            Text(
+                text = "Kategori Tersimpan (${categoryList.size})",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
 
-                    Row(
+            Spacer(modifier = Modifier.height(12.dp))
+
+            LazyColumn {
+
+                items(categoryList) { category ->
+
+                    Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                            .padding(vertical = 4.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White
+                        ),
+                        elevation = CardDefaults.cardElevation(
+                            defaultElevation = 5.dp
+                        )
                     ) {
 
-                        Text(category.name)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
 
-                        Row {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
 
-                            IconButton(
-                                onClick = {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .background(
+                                            MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                                            CircleShape
+                                        ),
+                                    contentAlignment = Alignment.Center
+                                ) {
 
-                                    categoryToEdit = category
-                                    editCategoryName = category.name
+                                    Icon(
+                                        imageVector = Icons.Default.Folder,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
 
                                 }
-                            ) {
-                                Icon(
-                                    Icons.Default.Edit,
-                                    contentDescription = "Edit"
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Text(
+                                    text = category.name,
+                                    fontWeight = FontWeight.SemiBold
                                 )
                             }
 
-                            IconButton(
-                                onClick = {
-                                    categoryToDelete = category
-                                }
-                            ) {
-                                Icon(
-                                    Icons.Default.Delete,
-                                    contentDescription = "Hapus"
-                                )
-                            }
+                            Row {
 
+                                IconButton(
+                                    onClick = {
+
+                                        categoryToEdit = category
+                                        editCategoryName = category.name
+
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Edit,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+
+                                IconButton(
+                                    onClick = {
+                                        categoryToDelete = category
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = null,
+                                        tint = Color(0xFFE53935)
+                                    )
+                                }
+
+                            }
                         }
                     }
                 }
             }
-        }
 
-        categoryToDelete?.let { selectedCategory ->
+            categoryToDelete?.let { selectedCategory ->
 
-            AlertDialog(
-                onDismissRequest = {
-                    categoryToDelete = null
-                },
+                AlertDialog(
+                    onDismissRequest = {
+                        categoryToDelete = null
+                    },
 
-                title = {
-                    Text("Hapus Kategori")
-                },
+                    title = {
+                        Text("Hapus Kategori")
+                    },
 
-                text = {
-                    Text("Apakah yakin ingin menghapus kategori \"${selectedCategory.name}\"?")
-                },
+                    text = {
+                        Text("Apakah yakin ingin menghapus kategori \"${selectedCategory.name}\"?")
+                    },
 
-                confirmButton = {
+                    confirmButton = {
 
-                    TextButton(
-                        onClick = {
+                        TextButton(
+                            onClick = {
 
-                            if (repository.isCategoryUsed(selectedCategory.name)) {
+                                if (repository.isCategoryUsed(selectedCategory.name)) {
 
-                                usedCategoryName = selectedCategory.name
-                                showCategoryUsedDialog = true
+                                    usedCategoryName = selectedCategory.name
+                                    showCategoryUsedDialog = true
 
-                            } else {
+                                } else {
 
-                                repository.deleteCategory(selectedCategory.id)
+                                    repository.deleteCategory(selectedCategory.id)
 
-                                loadCategories()
-
-                            }
-
-                            categoryToDelete = null
-                        }
-                    ) {
-                        Text("Hapus")
-                    }
-                },
-
-                dismissButton = {
-
-                    TextButton(
-                        onClick = {
-                            categoryToDelete = null
-                        }
-                    ) {
-                        Text("Batal")
-                    }
-                }
-            )
-        }
-
-        categoryToEdit?.let { selectedCategory ->
-
-            AlertDialog(
-
-                onDismissRequest = {
-                    categoryToEdit = null
-                },
-
-                title = {
-                    Text("Edit Kategori")
-                },
-
-                text = {
-
-                    OutlinedTextField(
-                        value = editCategoryName,
-                        onValueChange = {
-                            editCategoryName = it
-                        },
-                        label = {
-                            Text("Nama Kategori")
-                        },
-                        singleLine = true
-                    )
-
-                },
-
-                confirmButton = {
-
-                    TextButton(
-                        onClick = {
-
-                            if (editCategoryName.isNotBlank()) {
-
-                                if (
-                                    formatCategoryName(editCategoryName) ==
-                                    selectedCategory.name
-                                ) {
-
-                                    categoryToEdit = null
-                                    return@TextButton
+                                    loadCategories()
 
                                 }
 
-                                if (
-                                    repository.isCategoryExists(
+                                categoryToDelete = null
+                            }
+                        ) {
+                            Text(
+                                text = "Hapus",
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    },
+
+                    dismissButton = {
+
+                        TextButton(
+                            onClick = {
+                                categoryToDelete = null
+                            }
+                        ) {
+                            Text("Batal")
+                        }
+                    }
+                )
+            }
+
+            categoryToEdit?.let { selectedCategory ->
+
+                AlertDialog(
+
+                    onDismissRequest = {
+                        categoryToEdit = null
+                    },
+
+                    title = {
+                        Text("Edit Kategori")
+                    },
+
+                    text = {
+
+                        OutlinedTextField(
+                            value = editCategoryName,
+                            onValueChange = {
+                                editCategoryName = it
+                            },
+                            label = {
+                                Text("Nama Kategori")
+                            },
+                            singleLine = true
+                        )
+
+                    },
+
+                    confirmButton = {
+
+                        TextButton(
+                            onClick = {
+
+                                if (editCategoryName.isNotBlank()) {
+
+                                    if (
+                                        formatCategoryName(editCategoryName) ==
+                                        selectedCategory.name
+                                    ) {
+
+                                        categoryToEdit = null
+                                        return@TextButton
+
+                                    }
+
+                                    if (
+                                        repository.isCategoryExists(
+                                            formatCategoryName(editCategoryName)
+                                        )
+                                    ) {
+
+                                        showDuplicateDialog = true
+                                        return@TextButton
+
+                                    }
+
+                                    val oldName = selectedCategory.name
+
+                                    repository.updateCategory(
+                                        Category(
+                                            id = selectedCategory.id,
+                                            name = formatCategoryName(editCategoryName)
+                                        )
+                                    )
+
+                                    repository.updateTaskCategory(
+                                        oldName,
                                         formatCategoryName(editCategoryName)
                                     )
-                                ) {
 
-                                    showDuplicateDialog = true
-                                    return@TextButton
+                                    loadCategories()
 
+                                    categoryToEdit = null
                                 }
+                            }
+                        ) {
+                            Text("Simpan")
+                        }
 
-                                val oldName = selectedCategory.name
+                    },
 
-                                repository.updateCategory(
-                                    Category(
-                                        id = selectedCategory.id,
-                                        name = formatCategoryName(editCategoryName)
-                                    )
-                                )
+                    dismissButton = {
 
-                                repository.updateTaskCategory(
-                                    oldName,
-                                    formatCategoryName(editCategoryName)
-                                )
-
-                                loadCategories()
-
+                        TextButton(
+                            onClick = {
                                 categoryToEdit = null
                             }
+                        ) {
+                            Text("Batal")
                         }
-                    ) {
-                        Text("Simpan")
+
                     }
 
-                },
+                )
 
-                dismissButton = {
+            }
 
-                    TextButton(
-                        onClick = {
-                            categoryToEdit = null
+            if (showCategoryUsedDialog) {
+
+                AlertDialog(
+
+                    onDismissRequest = {
+                        showCategoryUsedDialog = false
+                    },
+
+                    title = {
+                        Text("Kategori Tidak Dapat Dihapus")
+                    },
+
+                    text = {
+
+                        Text(
+                            "Kategori \"$usedCategoryName\" masih digunakan oleh satu atau lebih tugas.\n\n" +
+                                    "Untuk menjaga konsistensi data, kategori ini tidak dapat dihapus sebelum semua tugas yang menggunakannya dipindahkan ke kategori lain."
+                        )
+
+                    },
+
+                    confirmButton = {
+
+                        TextButton(
+                            onClick = {
+
+                                showCategoryUsedDialog = false
+                                usedCategoryName = ""
+
+                            }
+                        ) {
+                            Text("Mengerti")
                         }
-                    ) {
-                        Text("Batal")
+
                     }
 
-                }
+                )
 
-            )
+            }
 
-        }
+            if (showDuplicateDialog) {
 
-        if (showCategoryUsedDialog) {
+                AlertDialog(
 
-            AlertDialog(
+                    onDismissRequest = {
+                        showDuplicateDialog = false
+                    },
 
-                onDismissRequest = {
-                    showCategoryUsedDialog = false
-                },
+                    title = {
+                        Text("Kategori Sudah Ada")
+                    },
 
-                title = {
-                    Text("Kategori Tidak Dapat Dihapus")
-                },
+                    text = {
 
-                text = {
+                        Text(
+                            "Kategori dengan nama tersebut sudah tersedia.\n\nSilakan gunakan nama lain agar tidak terjadi duplikasi."
+                        )
 
-                    Text(
-                        "Kategori \"$usedCategoryName\" masih digunakan oleh satu atau lebih tugas.\n\n" +
-                                "Untuk menjaga konsistensi data, kategori ini tidak dapat dihapus sebelum semua tugas yang menggunakannya dipindahkan ke kategori lain."
-                    )
+                    },
 
-                },
+                    confirmButton = {
 
-                confirmButton = {
-
-                    TextButton(
-                        onClick = {
-
-                            showCategoryUsedDialog = false
-                            usedCategoryName = ""
-
+                        TextButton(
+                            onClick = {
+                                showDuplicateDialog = false
+                            }
+                        ) {
+                            Text("Mengerti")
                         }
-                    ) {
-                        Text("Mengerti")
+
                     }
 
-                }
+                )
 
-            )
-
-        }
-
-        if (showDuplicateDialog) {
-
-            AlertDialog(
-
-                onDismissRequest = {
-                    showDuplicateDialog = false
-                },
-
-                title = {
-                    Text("Kategori Sudah Ada")
-                },
-
-                text = {
-
-                    Text(
-                        "Kategori dengan nama tersebut sudah tersedia.\n\nSilakan gunakan nama lain agar tidak terjadi duplikasi."
-                    )
-
-                },
-
-                confirmButton = {
-
-                    TextButton(
-                        onClick = {
-                            showDuplicateDialog = false
-                        }
-                    ) {
-                        Text("Mengerti")
-                    }
-
-                }
-
-            )
-
+            }
         }
     }
 }

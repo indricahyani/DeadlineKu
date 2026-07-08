@@ -48,6 +48,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material.icons.filled.Assignment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -216,6 +217,7 @@ fun HomeScreen(navController: NavController) {
 
             val sortedTasks = filteredTasks.sortedWith(
                 compareBy<Task>(
+                    { it.completed }, // belum selesai dulu
                     {
                         LocalDate.parse(it.deadlineDate, dateFormatter)
                     },
@@ -234,9 +236,11 @@ fun HomeScreen(navController: NavController) {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
 
-                    Text(
-                        text = "📝",
-                        style = MaterialTheme.typography.displayLarge
+                    Icon(
+                        imageVector = Icons.Default.Assignment,
+                        contentDescription = null,
+                        modifier = Modifier.size(80.dp),
+                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f)
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -281,7 +285,11 @@ fun HomeScreen(navController: NavController) {
                             ),
 
                             colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface
+                                containerColor =
+                                    if (task.completed)
+                                        Color(0xFFF2F2F2)
+                                    else
+                                        MaterialTheme.colorScheme.surface
                             )
                         ) {
 
@@ -323,7 +331,12 @@ fun HomeScreen(navController: NavController) {
                                             text = task.title,
                                             fontWeight = FontWeight.Bold,
                                             fontSize = 18.sp,
-                                            style = MaterialTheme.typography.titleMedium
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color =
+                                                if (task.completed)
+                                                    Color.Gray
+                                                else
+                                                    MaterialTheme.colorScheme.onSurface
                                         )
                                     }
 
@@ -334,7 +347,12 @@ fun HomeScreen(navController: NavController) {
                                         Text(
                                             text = task.description,
                                             maxLines = 1,
-                                            overflow = TextOverflow.Ellipsis
+                                            overflow = TextOverflow.Ellipsis,
+                                            color =
+                                                if (task.completed)
+                                                    Color.Gray
+                                                else
+                                                    MaterialTheme.colorScheme.onSurfaceVariant
                                         )
 
                                         Spacer(modifier = Modifier.height(2.dp))
@@ -362,15 +380,19 @@ fun HomeScreen(navController: NavController) {
                                                 task.deadlineTime
                                             ),
                                             color =
-                                                if (
+                                                when {
+                                                    task.completed ->
+                                                        Color.Gray
+
                                                     isOverdue(
                                                         task.deadlineDate,
                                                         task.completed
-                                                    )
-                                                )
-                                                    MaterialTheme.colorScheme.error
-                                                else
-                                                    MaterialTheme.colorScheme.onSurface
+                                                    ) ->
+                                                        MaterialTheme.colorScheme.error
+
+                                                    else ->
+                                                        MaterialTheme.colorScheme.onSurface
+                                                }
                                         )
                                     }
                                 }
