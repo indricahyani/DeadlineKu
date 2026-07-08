@@ -19,4 +19,23 @@ class CategoryRepository(context: Context) {
     fun deleteCategory(categoryId: Int): Boolean {
         return db.deleteCategory(categoryId)
     }
+
+    fun updateCategory(category: Category): Boolean {
+        return db.updateCategory(category)
+    }
+
+    fun updateTaskCategory(
+        oldCategory: String,
+        newCategory: String
+    ): Boolean {
+        return db.updateTaskCategory(oldCategory, newCategory)
+    }
+
+    fun isCategoryUsed(categoryName: String): Boolean {
+        return db.isCategoryUsed(categoryName)
+    }
+
+    fun isCategoryExists(categoryName: String): Boolean {
+        return db.isCategoryExists(categoryName)
+    }
 }

@@ -12,9 +12,14 @@ import androidx.compose.ui.unit.dp
 import com.example.deadlineku.model.Category
 import com.example.deadlineku.repository.CategoryRepository
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material.icons.filled.Edit
+import androidx.navigation.NavController
 
 @Composable
-fun CategoryScreen() {
+fun CategoryScreen(
+    navController: NavController,
+    openedFromAddTask: Boolean = false
+) {
 
     val context = LocalContext.current
 
@@ -31,6 +36,27 @@ fun CategoryScreen() {
     var categoryToDelete by remember {
         mutableStateOf<Category?>(null)
     }
+
+    var categoryToEdit by remember {
+        mutableStateOf<Category?>(null)
+    }
+
+    var editCategoryName by remember {
+        mutableStateOf("")
+    }
+
+    var showCategoryUsedDialog by remember {
+        mutableStateOf(false)
+    }
+
+    var usedCategoryName by remember {
+        mutableStateOf("")
+    }
+
+    var showDuplicateDialog by remember {
+        mutableStateOf(false)
+    }
+
 
     fun loadCategories() {
         categoryList = repository.getCategories()
@@ -71,15 +97,32 @@ fun CategoryScreen() {
 
                 if (categoryName.isNotBlank()) {
 
-                    val success = repository.addCategory(
-                        Category(
-                            name = categoryName
+                    if (
+                        repository.isCategoryExists(
+                            formatCategoryName(categoryName)
                         )
-                    )
+                    ) {
 
-                    if (success) {
-                        categoryName = ""
-                        loadCategories()
+                        showDuplicateDialog = true
+
+                    } else {
+
+                        val success = repository.addCategory(
+                            Category(
+                                name = formatCategoryName(categoryName)
+                            )
+                        )
+
+                        if (success) {
+
+                            categoryName = ""
+
+                            loadCategories()
+
+                            if (openedFromAddTask) {
+                                navController.popBackStack()
+                            }
+                        }
                     }
                 }
 
@@ -110,15 +153,33 @@ fun CategoryScreen() {
 
                         Text(category.name)
 
-                        IconButton(
-                            onClick = {
-                                categoryToDelete = category
+                        Row {
+
+                            IconButton(
+                                onClick = {
+
+                                    categoryToEdit = category
+                                    editCategoryName = category.name
+
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Edit,
+                                    contentDescription = "Edit"
+                                )
                             }
-                        ) {
-                            Icon(
-                                Icons.Default.Delete,
-                                contentDescription = "Hapus Kategori"
-                            )
+
+                            IconButton(
+                                onClick = {
+                                    categoryToDelete = category
+                                }
+                            ) {
+                                Icon(
+                                    Icons.Default.Delete,
+                                    contentDescription = "Hapus"
+                                )
+                            }
+
                         }
                     }
                 }
@@ -145,9 +206,18 @@ fun CategoryScreen() {
                     TextButton(
                         onClick = {
 
-                            repository.deleteCategory(selectedCategory.id)
+                            if (repository.isCategoryUsed(selectedCategory.name)) {
 
-                            loadCategories()
+                                usedCategoryName = selectedCategory.name
+                                showCategoryUsedDialog = true
+
+                            } else {
+
+                                repository.deleteCategory(selectedCategory.id)
+
+                                loadCategories()
+
+                            }
 
                             categoryToDelete = null
                         }
@@ -168,5 +238,189 @@ fun CategoryScreen() {
                 }
             )
         }
+
+        categoryToEdit?.let { selectedCategory ->
+
+            AlertDialog(
+
+                onDismissRequest = {
+                    categoryToEdit = null
+                },
+
+                title = {
+                    Text("Edit Kategori")
+                },
+
+                text = {
+
+                    OutlinedTextField(
+                        value = editCategoryName,
+                        onValueChange = {
+                            editCategoryName = it
+                        },
+                        label = {
+                            Text("Nama Kategori")
+                        },
+                        singleLine = true
+                    )
+
+                },
+
+                confirmButton = {
+
+                    TextButton(
+                        onClick = {
+
+                            if (editCategoryName.isNotBlank()) {
+
+                                if (
+                                    formatCategoryName(editCategoryName) ==
+                                    selectedCategory.name
+                                ) {
+
+                                    categoryToEdit = null
+                                    return@TextButton
+
+                                }
+
+                                if (
+                                    repository.isCategoryExists(
+                                        formatCategoryName(editCategoryName)
+                                    )
+                                ) {
+
+                                    showDuplicateDialog = true
+                                    return@TextButton
+
+                                }
+
+                                val oldName = selectedCategory.name
+
+                                repository.updateCategory(
+                                    Category(
+                                        id = selectedCategory.id,
+                                        name = formatCategoryName(editCategoryName)
+                                    )
+                                )
+
+                                repository.updateTaskCategory(
+                                    oldName,
+                                    formatCategoryName(editCategoryName)
+                                )
+
+                                loadCategories()
+
+                                categoryToEdit = null
+                            }
+                        }
+                    ) {
+                        Text("Simpan")
+                    }
+
+                },
+
+                dismissButton = {
+
+                    TextButton(
+                        onClick = {
+                            categoryToEdit = null
+                        }
+                    ) {
+                        Text("Batal")
+                    }
+
+                }
+
+            )
+
+        }
+
+        if (showCategoryUsedDialog) {
+
+            AlertDialog(
+
+                onDismissRequest = {
+                    showCategoryUsedDialog = false
+                },
+
+                title = {
+                    Text("Kategori Tidak Dapat Dihapus")
+                },
+
+                text = {
+
+                    Text(
+                        "Kategori \"$usedCategoryName\" masih digunakan oleh satu atau lebih tugas.\n\n" +
+                                "Untuk menjaga konsistensi data, kategori ini tidak dapat dihapus sebelum semua tugas yang menggunakannya dipindahkan ke kategori lain."
+                    )
+
+                },
+
+                confirmButton = {
+
+                    TextButton(
+                        onClick = {
+
+                            showCategoryUsedDialog = false
+                            usedCategoryName = ""
+
+                        }
+                    ) {
+                        Text("Mengerti")
+                    }
+
+                }
+
+            )
+
+        }
+
+        if (showDuplicateDialog) {
+
+            AlertDialog(
+
+                onDismissRequest = {
+                    showDuplicateDialog = false
+                },
+
+                title = {
+                    Text("Kategori Sudah Ada")
+                },
+
+                text = {
+
+                    Text(
+                        "Kategori dengan nama tersebut sudah tersedia.\n\nSilakan gunakan nama lain agar tidak terjadi duplikasi."
+                    )
+
+                },
+
+                confirmButton = {
+
+                    TextButton(
+                        onClick = {
+                            showDuplicateDialog = false
+                        }
+                    ) {
+                        Text("Mengerti")
+                    }
+
+                }
+
+            )
+
+        }
     }
+}
+
+fun formatCategoryName(name: String): String {
+    return name
+        .trim()
+        .lowercase()
+        .split(" ")
+        .joinToString(" ") { word ->
+            word.replaceFirstChar {
+                it.uppercase()
+            }
+        }
 }

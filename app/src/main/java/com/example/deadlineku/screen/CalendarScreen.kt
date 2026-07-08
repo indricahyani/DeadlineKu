@@ -60,6 +60,19 @@ fun CalendarScreen(
         taskList = repository.getTasks()
     }
 
+    LaunchedEffect(calendarState.monthState.currentMonth) {
+
+        val currentMonth = calendarState.monthState.currentMonth
+
+        val currentDay = selectedDate.dayOfMonth
+
+        val maxDay = currentMonth.lengthOfMonth()
+
+        selectedDate = currentMonth.atDay(
+            minOf(currentDay, maxDay)
+        )
+    }
+
     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
     val selectedTasks = taskList.filter {

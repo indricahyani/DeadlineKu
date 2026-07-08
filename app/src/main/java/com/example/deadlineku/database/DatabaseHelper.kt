@@ -365,4 +365,89 @@ class DatabaseHelper(context: Context) :
 
         return result > 0
     }
+
+    fun updateCategory(category: Category): Boolean {
+
+        val db = writableDatabase
+
+        val values = ContentValues()
+
+        values.put(COLUMN_CATEGORY_NAME, category.name)
+
+        val result = db.update(
+            TABLE_CATEGORY,
+            values,
+            "$COLUMN_ID=?",
+            arrayOf(category.id.toString())
+        )
+
+        db.close()
+
+        return result > 0
+    }
+
+    fun updateTaskCategory(
+        oldCategory: String,
+        newCategory: String
+    ): Boolean {
+
+        val db = writableDatabase
+
+        val values = ContentValues()
+
+        values.put(COLUMN_CATEGORY, newCategory)
+
+        val result = db.update(
+            TABLE_TASK,
+            values,
+            "$COLUMN_CATEGORY=?",
+            arrayOf(oldCategory)
+        )
+
+        db.close()
+
+        return result >= 0
+    }
+
+    fun isCategoryUsed(categoryName: String): Boolean {
+
+        val db = readableDatabase
+
+        val cursor = db.rawQuery(
+            "SELECT COUNT(*) FROM $TABLE_TASK WHERE $COLUMN_CATEGORY = ?",
+            arrayOf(categoryName)
+        )
+
+        var used = false
+
+        if (cursor.moveToFirst()) {
+            used = cursor.getInt(0) > 0
+        }
+
+        cursor.close()
+        db.close()
+
+        return used
+    }
+
+    fun isCategoryExists(categoryName: String): Boolean {
+
+        val db = readableDatabase
+
+        val cursor = db.rawQuery(
+            "SELECT COUNT(*) FROM $TABLE_CATEGORY WHERE LOWER($COLUMN_CATEGORY_NAME)=LOWER(?)",
+            arrayOf(categoryName.trim())
+        )
+
+        var exists = false
+
+        if (cursor.moveToFirst()) {
+            exists = cursor.getInt(0) > 0
+        }
+
+        cursor.close()
+        db.close()
+
+        return exists
+    }
 }

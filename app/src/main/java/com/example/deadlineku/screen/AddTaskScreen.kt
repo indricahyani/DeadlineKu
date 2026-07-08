@@ -31,6 +31,7 @@ import androidx.compose.material3.rememberTimePickerState
 import java.util.Calendar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.platform.LocalContext
+import com.example.deadlineku.navigation.Screen
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,6 +60,10 @@ fun AddTaskScreen(
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var category by remember { mutableStateOf("") }
+    var showCategoryDialog by remember {
+        mutableStateOf(false)
+    }
+
     var deadlineDate by remember { mutableStateOf("") }
     var showDatePicker by remember {
         mutableStateOf(false)
@@ -112,7 +117,13 @@ fun AddTaskScreen(
         ExposedDropdownMenuBox(
             expanded = expanded,
             onExpandedChange = {
-                expanded = !expanded
+
+                if (categoryList.isEmpty()) {
+                    showCategoryDialog = true
+                } else {
+                    expanded = !expanded
+                }
+
             }
         ) {
 
@@ -319,5 +330,56 @@ fun AddTaskScreen(
                 )
             }
         )
+    }
+
+    if (showCategoryDialog) {
+
+        AlertDialog(
+
+            onDismissRequest = {
+                showCategoryDialog = false
+            },
+
+            title = {
+                Text("Belum Ada Kategori")
+            },
+
+            text = {
+
+                Text(
+                    "Sebelum membuat tugas, kamu perlu menambahkan minimal satu kategori terlebih dahulu melalui menu Kelola Kategori."
+                )
+
+            },
+
+            confirmButton = {
+
+                TextButton(
+                    onClick = {
+
+                        showCategoryDialog = false
+
+                        navController.navigate(Screen.CategoryFromAddTask.route)
+                    }
+                ) {
+                    Text("Kelola Kategori")
+                }
+
+            },
+
+            dismissButton = {
+
+                TextButton(
+                    onClick = {
+                        showCategoryDialog = false
+                    }
+                ) {
+                    Text("Nanti")
+                }
+
+            }
+
+        )
+
     }
 }

@@ -97,7 +97,17 @@ fun AppNavigation() {
             }
 
             composable(Screen.Category.route) {
-                CategoryScreen()
+                CategoryScreen(
+                    navController = navController,
+                    openedFromAddTask = false
+                )
+            }
+
+            composable(Screen.CategoryFromAddTask.route) {
+                CategoryScreen(
+                    navController = navController,
+                    openedFromAddTask = true
+                )
             }
         }
     }
